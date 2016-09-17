@@ -29,9 +29,13 @@ RUN apt-get install rlwrap nodejs
 RUN apt-get install -y wget
 
 
-RUN wget https://github.com/bbcrd/audiowaveform/archive/1.0.11.tar.gz -O audiowaveform
+RUN wget https://github.com/bbcrd/audiowaveform/archive/1.0.11.tar.gz -O audiowaveform.tar.gz
+
+RUN tar xf audiowaveform.tar.gz
 
 WORKDIR /audiowaveform
+
+RUN ls
 
 WORKDIR build
 
