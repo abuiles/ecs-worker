@@ -6,6 +6,13 @@ cdn_bucket=${CDN_BUCKET}
 
 echo "Region: ${region}"
 
+if [ -n "${region}" ]; then
+    echo "ENV params found."
+else
+    echo "ENV params not found . Exiting."
+    exit 0
+fi
+
 # Fetch messages and render them until the queue is drained.
 while [ /bin/true ]; do
     # Fetch the next message and extract the S3 URL
