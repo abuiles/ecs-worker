@@ -33,7 +33,9 @@ RUN wget https://github.com/bbcrd/audiowaveform/archive/1.0.11.tar.gz -O audiowa
 
 RUN tar xf audiowaveform.tar.gz
 
-WORKDIR /audiowaveform
+RUN ls
+
+WORKDIR /audiowaveform-1.0.11
 
 RUN ls
 
