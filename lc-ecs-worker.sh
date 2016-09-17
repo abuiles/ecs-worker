@@ -4,6 +4,8 @@ region=${AWS_REGION}
 queue=${SQS_QUEUE_URL}
 cdn_bucket=${CDN_BUCKET}
 
+echo "Region: ${region}"
+
 # Fetch messages and render them until the queue is drained.
 while [ /bin/true ]; do
     # Fetch the next message and extract the S3 URL
@@ -12,12 +14,15 @@ while [ /bin/true ]; do
         aws sqs receive-message \
             --queue-url ${queue} \
             --region ${region} \
-            --wait-time-seconds 20 \
+            --wait-time-seconds 1 \
+            --max-number-of-messages 1 \
             --query Messages[0].[Body,ReceiptHandle] \
         | sed -e 's/^"\(.*\)"$/\1/'\
     )
 
-    if [ -z "${result}" ]; then
+    echo "Result: ${result}"
+
+    if [ "${result}" = "null" ]; then
         echo "No messages left in queue. Exiting."
         exit 0
     else
@@ -31,27 +36,22 @@ while [ /bin/true ]; do
 
         key=$(echo ${result} | sed -e 's/^.*\\"key\\":\s*\\"\([^\\]*\)\\".*$/\1/')
         echo "Key: ${key}."
+        echo "Bucket: ${bucket}."
 
         base=${key%.*}
         ext=${key##*.}
 
-        if [ \
-            -n "${result}" -a \
-            -n "${receipt_handle}" -a \
-            -n "${key}" -a \
-            -n "${base}" -a \
-            -n "${ext}" -a \
-            "${ext}" = "zip" \
-        ]; then
+        if [ -n "${result}" -a -n "${receipt_handle}" -a -n "${key}" ]; then
             mkdir -p work
             cp clean.js work/
 
             pushd work
 
-            aws s3 cp s3://${bucket}/${key} . --region ${region}
+            aws s3 cp s3://${bucket}/${key} podcasturl --region ${region}
 
-            echo "Processing ${key}...url: `cat ${key}`"
-            FILE_URL=`cat ${key}`
+            ls
+            echo "Processing ${key}...url: `cat podcasturl`"
+            FILE_URL=`cat podcasturl`
             echo "Creating audiowaveform for ${FILE_URL}"
 
             curl -o file.mp3 -L $FILE_URL
@@ -80,6 +80,8 @@ while [ /bin/true ]; do
                 else
                     echo "ERROR: audiowaveform source did not render png successfully."
                 fi
+
+                aws s3 rm s3://${bucket}/${key} --region ${region}
             else
                 echo "ERROR: audiowaveform source did not generate dat successfully."
             fi
@@ -93,7 +95,6 @@ while [ /bin/true ]; do
                 --queue-url ${queue} \
                 --region ${region} \
                 --receipt-handle "${receipt_handle}"
-
         else
             echo "ERROR: Could not extract S3 bucket and key from SQS message."
         fi
