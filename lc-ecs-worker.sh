@@ -31,12 +31,10 @@ while [ /bin/true ]; do
         receipt_handle=$(echo ${result} | sed -e 's/^.*"\([^"]*\)"\s*\]$/\1/')
         echo "Receipt handle: ${receipt_handle}."
 
-        bucket=$(echo ${result} | sed -e 's/^.*arn:aws:s3:::\([^\\]*\)\\".*$/\1/')
-        echo "Bucket: ${bucket}."
-
         key=$(echo ${result} | sed -e 's/^.*\\"key\\":\s*\\"\([^\\]*\)\\".*$/\1/')
+        FILE_URL=$(echo ${result} | sed -e 's/^.*\\"url\\":\s*\\"\([^\\]*\)\\".*$/\1/')
         echo "Key: ${key}."
-        echo "Bucket: ${bucket}."
+        echo "Key: ${FILE_URL}."
 
         base=${key%.*}
         ext=${key##*.}
@@ -47,11 +45,7 @@ while [ /bin/true ]; do
 
             pushd work
 
-            aws s3 cp s3://${bucket}/${key} podcasturl --region ${region}
-
-            ls
-            echo "Processing ${key}...url: `cat podcasturl`"
-            FILE_URL=`cat podcasturl`
+            echo "Processing ${key}...url"
             echo "Creating audiowaveform for ${FILE_URL}"
 
             curl -o file.mp3 -L $FILE_URL
@@ -80,8 +74,6 @@ while [ /bin/true ]; do
                 else
                     echo "ERROR: audiowaveform source did not render png successfully."
                 fi
-
-                aws s3 rm s3://${bucket}/${key} --region ${region}
             else
                 echo "ERROR: audiowaveform source did not generate dat successfully."
             fi
