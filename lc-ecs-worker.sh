@@ -58,8 +58,10 @@ while [ /bin/true ]; do
             curl -o file.mp3 -L $FILE_URL
             base="waveform"
 
-            if audiowaveform -i file.mp3 -o ${base}.dat -z 256; then
-                if audiowaveform -i ${base}.dat -o ${base}.png -z 256 --no-axis-labels; then
+            # audiowaveform -i some-file.mp3 --pixels-per-second 10 -b 8 -o some-file.json
+
+            if audiowaveform -i file.mp3 -o ${base}.dat --pixels-per-second 10 -b 8; then
+                if audiowaveform -i ${base}.dat -o ${base}.png --pixels-per-second 10 -b 8 --no-axis-labels; then
                     if [ -f ${base}.png ]; then
                         echo "Copying result image ${base}.png to s3://${cdn_bucket}/${key}/${base}.png..."
                         aws s3 cp ${base}.png s3://${cdn_bucket}/${key}/${base}.png
@@ -70,7 +72,7 @@ while [ /bin/true ]; do
                     echo "ERROR: audiowaveform source did not render png successfully."
                 fi
 
-                if audiowaveform -i ${base}.dat -o ${base}.json -z 256; then
+                if audiowaveform -i ${base}.dat -o ${base}.json --pixels-per-second 10 -b 8; then
                     node clean.js ${base}.json
                     if [ -f ${base}.json ]; then
                         echo "Copying result json ${base}.json to s3://${cdn_bucket}/${key}/${base}.json..."
