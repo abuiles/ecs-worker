@@ -45,9 +45,10 @@ RUN cmake -D CMAKE_BUILD_TYPE=${BUILD_TYPE} -D ENABLE_TESTS=0 .. \
    && make \
    && make install
 
-COPY ./lc-ecs-worker.sh ./lc-ecs-worker.sh
-COPY ./clean.js ./clean.js
+RUN wget https://raw.githubusercontent.com/abuiles/lc-ecs-worker/master/lc-ecs-worker.sh
+RUN wget https://raw.githubusercontent.com/abuiles/lc-ecs-worker/master/clean.js
 
+RUN chmod +x clean.js
 RUN chmod +x lc-ecs-worker.sh
 
 ENTRYPOINT ["./lc-ecs-worker.sh"]
