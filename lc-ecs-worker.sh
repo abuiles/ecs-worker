@@ -61,6 +61,8 @@ while [ /bin/true ]; do
             # audiowaveform -i some-file.mp3 --pixels-per-second 10 -b 8 -o some-file.json
 
             if audiowaveform -i file.mp3 -o ${base}.dat --pixels-per-second 10 -b 8; then
+                echo "Copying result .dat ${base}.dat to s3://${cdn_bucket}/${key}/${base}.dat..."
+                aws s3 cp ${base}.dat  s3://${cdn_bucket}/${key}/${base}.dat
                 if audiowaveform -i ${base}.dat -o ${base}.png --pixels-per-second 10 -b 8 --no-axis-labels; then
                     if [ -f ${base}.png ]; then
                         echo "Copying result image ${base}.png to s3://${cdn_bucket}/${key}/${base}.png..."
