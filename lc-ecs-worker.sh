@@ -75,7 +75,6 @@ while [ /bin/true ]; do
                 fi
 
                 if audiowaveform -i ${base}.dat -o ${base}.json --pixels-per-second 10 -b 8; then
-                    node clean.js ${base}.json
                     if [ -f ${base}.json ]; then
                         echo "Copying result json ${base}.json to s3://${cdn_bucket}/${key}/${base}.json..."
                         aws s3 cp ${base}.json s3://${cdn_bucket}/${key}/${base}.json
